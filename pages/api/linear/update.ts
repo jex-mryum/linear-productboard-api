@@ -9,6 +9,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     return;
   }
 
+  console.log({ body, method });
+
   // const parsed = z
   //   .object({
   //     action: z.enum([`update`]),
@@ -25,5 +27,5 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
   //   return;
   // }
 
-  res.status(200).send({ body, method });
+  res.status(200).send({});
 };
