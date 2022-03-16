@@ -1,4 +1,5 @@
 import * as z from 'zod';
+require('dotenv').config();
 
 export const env = z
   .object({

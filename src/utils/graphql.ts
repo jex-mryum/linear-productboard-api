@@ -1,13 +1,21 @@
 import { request, gql } from 'graphql-request';
 import { env } from '../utils/environment';
 
-const query = gql`
-{
-    
-}
-`;
+export const productboardApiTest = () => {
+  return fetch(`${env.productboardApiBaseUrl}/features`, {
+    method: `GET`,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${env.productboardApiToken}`,
+    },
+  }).then(response => {
+    return response;
+  });
+};
 
-request(env.productboardApiBaseUrl, query).then(data => console.log(data));
+// const query = gql``;
+
+// request(env.productboardApiBaseUrl, query).then(data => console.log(data));
 
 // import { GraphQLClient, gql } from 'graphql-request'
 
