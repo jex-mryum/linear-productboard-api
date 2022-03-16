@@ -6,7 +6,9 @@ import { productboardApiTest } from '../../../utils/graphql';
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   const { body, method } = req;
   const { action, data } = body;
+  console.log(body);
 
+  // const featureId = data.description;
   // const parsed = z
   //   .object({
   //     action: z.enum([`update`]),
@@ -35,11 +37,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
   //   });
   //   return;
   // }
-
-  console.log(body);
-
-  const productboard = await productboardApiTest();
-  console.log(productboard);
+  // console.log({ body, featureId } + `\n\n\n`);
+  // console.log(await productboardApiTest(featureId));
 
   res.status(200).send({});
 };

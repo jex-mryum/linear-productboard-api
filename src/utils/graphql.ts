@@ -1,8 +1,8 @@
 import { request, gql } from 'graphql-request';
 import { env } from '../utils/environment';
 
-export const productboardApiTest = () => {
-  return fetch(`${env.productboardApiBaseUrl}/features`, {
+export const productboardApiTest = (featureId: string) => {
+  return fetch(`${env.productboardApiBaseUrl}/features/${featureId}`, {
     method: `GET`,
     headers: {
       'Content-Type': 'application/json',
