@@ -1,0 +1,98 @@
+openapi: '3.0.0'
+info:
+  description: >-
+    This document details that Mr Yum uses to capture incoming calls Linear
+    Webhooks to be sanitised and passed into Productboard.
+  version: 1.0.0
+  title: Linear Productboard Integration
+paths:
+  '/api/linear/update':
+    post:
+      tags:
+        - update
+      operationId: update
+      summary: Linear update action webhook
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LinearUpdate'
+      responses:
+        '200':
+          $ref: '#/components/responses/EmptyResponse'
+        '400':
+          $ref: '#/components/responses/BadRequestResponse'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedResponse'
+        '403':
+          $ref: '#/components/responses/UnauthorizedResponse'
+        '500':
+          $ref: '#/components/responses/ServerErrorResponse'
+
+components:
+  schemas:
+    LinearUpdate:
+      type: object
+      properties:
+        action:
+          type: string
+          nullable: false
+          example: 'update'
+        data:
+          type: object
+          properties:
+            id:
+              type: string
+            title:
+              type: string
+            description:
+              type: string
+    EmptyResponse:
+      type: object
+      properties: {}
+      example: {}
+    Error:
+      type: object
+      properties:
+        message:
+          description: 'The message returned from the service'
+          type: string
+          example: 'This is a totally helpful error message'
+  responses:
+    EmptyResponse:
+      description: 'Session creation was successful'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/EmptyResponse'
+    BadRequestResponse:
+      description: 'Invalid request'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnauthenticatedResponse:
+      description: 'Unauthenticated'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnauthorizedResponse:
+      description: 'Unauthorized'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFoundResponse:
+      description: 'Not found'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ServerErrorResponse:
+      description: 'An error occurred'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
