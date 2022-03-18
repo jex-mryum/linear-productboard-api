@@ -1,14 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as z from 'zod';
-import { env } from '../../../utils/environment';
-import { productboardApiTest } from '../../../utils/graphql';
+import { env } from '../../utils/environment';
+import { productboardApiTest } from '../../utils/graphql';
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   const { body, method } = req;
   const { action, data } = body;
   console.log(body);
 
-  // const featureId = data.description;
   // const parsed = z
   //   .object({
   //     action: z.enum([`update`]),
