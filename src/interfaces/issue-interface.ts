@@ -1,6 +1,7 @@
 // ACTIONS - Create Issue, Update Description, Update Assignee, Update Status, Delete Issue
 
 export interface IssueData {
+  // All
   number: number;
   title: string;
   priority: number;
