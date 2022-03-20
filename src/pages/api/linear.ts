@@ -13,6 +13,10 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
   const body: LinearBody = req.body;
   const { action, data, type, url, createdAt, updatedFrom } = body;
 
+  if (method != `POST`) {
+    res.status(403).send({ message: `Invalid request method` });
+    return;
+  }
   const parsed = z
     .object({
       url: z.string().nonempty(),
@@ -51,31 +55,33 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
       updatedFrom,
     });
 
-  if (!parsed.success) {
-    res.status(400).send({
-      message: `Invalid request shape or action - please compare the Linear Webhook documentation to the OpenAPI doc for this project`,
-    });
-    return;
-  }
+  console.log(parsed);
 
-  if (method != `POST`) {
-    res.status(403).send({ message: `Invalid request method` });
-    return;
-  }
-  switch (body.type) {
-    case `Project`:
-      projectEventHandler(data as ProjectData);
-      break;
-    case `Issue`:
-      issueEventHandler(data as IssueData);
-      break;
-    case `Comment`:
-      commentEventHandler(data as CommentData);
-      break;
-    default:
-      res.status(202).send({ message: `Unused type - event was not processed` });
-      return;
-  }
+  // if (!parsed.success) {
+  //   res.status(400).send({
+  //     message: `Invalid request shape or action - please compare the Linear Webhook documentation to the OpenAPI doc for this project`,
+  //   });
+  //   return;
+  // }
+
+  // let payload;
+  // switch (body.type) {
+  //   case `Project`:
+  //     payload = projectDataSanitizer(data);
+  //     projectEventHandler(payload);
+  //     break;
+  //   case `Issue`:
+  //     payload = issueDataSanitizer(data);
+  //     issueEventHandler(payload);
+  //     break;
+  //   case `Comment`:
+  //     payload = commentDataSanitizer(data);
+  //     commentEventHandler(payload);
+  //     break;
+  //   default:
+  //     res.status(202).send({ message: `Unused type - event was not processed` });
+  //     return;
+  // }
 
   res.status(200).send({});
 };
