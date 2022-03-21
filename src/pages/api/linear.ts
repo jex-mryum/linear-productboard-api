@@ -1,87 +1,30 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { CommentData, LinearBody } from '../../interfaces/interfaces';
-import * as z from 'zod';
-import isISODate from '../../utils/iso-string';
-import { projectEventHandler } from '../../handlers/project-handler';
-import { ProjectData } from '../../interfaces/project-interface';
-import { issueEventHandler } from '../../handlers/issue-handler';
-import { IssueData } from '../../interfaces/issue-interface';
-import { commentEventHandler } from '../../handlers/comment-handler';
+import { parseBasePayload, parseData } from '../../sanitize/base';
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
-  const { method } = req;
-  const body: LinearBody = req.body;
-  const { action, data, type, url, createdAt, updatedFrom } = body;
+  const { body, method } = req;
 
   if (method != `POST`) {
     res.status(403).send({ message: `Invalid request method` });
     return;
   }
-  const parsed = z
-    .object({
-      url: z.string().nonempty(),
-      action: z.enum([`create`, `update`, `remove`]),
-      type: z.enum([`Project`, `Issue`, `Comment`]),
-      createdAt: z.string().refine(isISODate, { message: `Invalid ISO datestring` }),
-      updatedFrom: z.object({
-        updatedAt: z.string().refine(isISODate, { message: `Invalid ISO datestring` }),
-        name: z.string().optional(),
-        state: z
-          .object({
-            id: z.string(),
-            name: z.string(),
-            type: z.string(),
-            color: z.string(),
-          })
-          .optional(),
-        body: z.string().optional(),
-        leadId: z.string().optional(),
-        stateId: z.string().optional(),
-        sortOrder: z.number().optional(),
-        assigneeId: z.string().optional(),
-        description: z.string().optional(),
-        memberIds: z.array(z.string()).optional(),
-        cycleId: z.string().refine(isISODate, { message: `Invalid ISO datestring` }).optional(),
-        editedAt: z.string().refine(isISODate, { message: `Invalid ISO datestring` }).optional(),
-        startedAt: z.string().refine(isISODate, { message: `Invalid ISO datestring` }).optional(),
-        startedDate: z.string().refine(isISODate, { message: `Invalid ISO datestring` }).optional(),
-      }),
-    })
-    .safeParse({
-      action,
-      createdAt,
-      url,
-      type,
-      updatedFrom,
+  console.log(`BODY\n`, body);
+  const parsed = parseBasePayload(body);
+  console.log(`PARSED\n`, parsed);
+  if (!parsed.success) {
+    return res.status(400).send({
+      message: `Invalid request shape or action - please compare the Linear Webhook documentation to the OpenAPI doc for this project`,
     });
+  }
+  const { type, data } = body;
+  const sanitizedData = parseData(type, data);
+  if (!sanitizedData.success) {
+    return res.status(400).send({ message: `Request body 'data' structure was invalid: ${sanitizedData.error}` });
+  }
 
-  console.log(parsed);
-
-  // if (!parsed.success) {
-  //   res.status(400).send({
-  //     message: `Invalid request shape or action - please compare the Linear Webhook documentation to the OpenAPI doc for this project`,
-  //   });
-  //   return;
-  // }
-
-  // let payload;
-  // switch (body.type) {
-  //   case `Project`:
-  //     payload = projectDataSanitizer(data);
-  //     projectEventHandler(payload);
-  //     break;
-  //   case `Issue`:
-  //     payload = issueDataSanitizer(data);
-  //     issueEventHandler(payload);
-  //     break;
-  //   case `Comment`:
-  //     payload = commentDataSanitizer(data);
-  //     commentEventHandler(payload);
-  //     break;
-  //   default:
-  //     res.status(202).send({ message: `Unused type - event was not processed` });
-  //     return;
-  // }
+  // Query Linear API to get projectId if not available
+  // Query Linear API to get PB API id from Project Description
+  // PUT to PB API to update description with original update
 
   res.status(200).send({});
 };

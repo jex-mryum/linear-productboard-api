@@ -1,3 +1,5 @@
-import { ProjectData } from '../interfaces/project-interface';
+import { ProjectData } from '../sanitize/project';
 
-export const projectEventHandler = (data: ProjectData) => {};
+export const projectEventHandler = async (data: ProjectData): Promise<boolean> => {
+  return true;
+};

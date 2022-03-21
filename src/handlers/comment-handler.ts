@@ -1,3 +1,3 @@
-import { CommentData } from '../interfaces/interfaces';
+import { CommentData } from '../sanitize/comment';
 
 export const commentEventHandler = (data: CommentData) => {};
