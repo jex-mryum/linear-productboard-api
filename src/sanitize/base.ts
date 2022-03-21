@@ -12,7 +12,7 @@ export interface LinearBody {
   url: string;
   type: UpdateType;
   data: LinearData;
-  updatedFrom?: UpdatedFrom;
+  updatedFrom?: UpdatedFrom | undefined;
 }
 
 export type LinearData = ProjectData | IssueData | CommentData;
@@ -57,41 +57,43 @@ export const parseBasePayload = (body: any): SafeParseReturnType<{}, Partial<Lin
         .refine(isISODate, { message: `Invalid ISO datestring` })
         .transform(s => new Date(s)),
       organizationId: z.string(),
-      updatedFrom: z.object({
-        updatedAt: z
-          .string()
-          .refine(isISODate, { message: `Invalid ISO datestring` })
-          .transform(s => (s ? new Date(s) : null))
-          .nullable(),
-        name: z.string().nullable().optional(),
-        state: z.string().optional(),
-        body: z.string().nullable().optional(),
-        leadId: z.string().nullable().optional(),
-        stateId: z.string().nullable().optional(),
-        sortOrder: z.number().optional(),
-        assigneeId: z.string().nullable().optional(),
-        description: z.string().nullable().optional(),
-        memberIds: z.array(z.string().nullable()).optional(),
-        cycleId: z
-          .string()
-          .refine(isISODate, { message: `Invalid ISO datestring` })
-          .transform(s => new Date(s))
-          .nullable()
-          .optional(),
-        editedAt: z
-          .string()
-          .refine(isISODate, { message: `Invalid ISO datestring` })
-          .transform(s => new Date(s))
-          .nullable()
-          .optional(),
-        startAt: z.string().nullable().optional(),
-        startedDate: z
-          .string()
-          .refine(isISODate, { message: `Invalid ISO datestring` })
-          .transform(s => new Date(s))
-          .nullable()
-          .optional(),
-      }),
+      updatedFrom: z
+        .object({
+          updatedAt: z
+            .string()
+            .refine(isISODate, { message: `Invalid ISO datestring` })
+            .transform(s => (s ? new Date(s) : null))
+            .nullable(),
+          name: z.string().nullable().optional(),
+          state: z.string().optional(),
+          body: z.string().nullable().optional(),
+          leadId: z.string().nullable().optional(),
+          stateId: z.string().nullable().optional(),
+          sortOrder: z.number().optional(),
+          assigneeId: z.string().nullable().optional(),
+          description: z.string().nullable().optional(),
+          memberIds: z.array(z.string().nullable()).optional(),
+          cycleId: z
+            .string()
+            .refine(isISODate, { message: `Invalid ISO datestring` })
+            .transform(s => new Date(s))
+            .nullable()
+            .optional(),
+          editedAt: z
+            .string()
+            .refine(isISODate, { message: `Invalid ISO datestring` })
+            .transform(s => new Date(s))
+            .nullable()
+            .optional(),
+          startAt: z.string().nullable().optional(),
+          startedDate: z
+            .string()
+            .refine(isISODate, { message: `Invalid ISO datestring` })
+            .transform(s => new Date(s))
+            .nullable()
+            .optional(),
+        })
+        .optional(),
     })
     .safeParse(body);
 
