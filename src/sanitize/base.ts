@@ -3,15 +3,14 @@ import { SafeParseReturnType, ZodError } from 'zod';
 import isISODate from '../utils/iso-string';
 import { CommentData, parseCommentData } from './comment';
 import { IssueData, parseIssueData } from './issue';
-import { ProjectData, parseProjectData } from './project';
+import { ProjectData } from './project';
 
-export interface LinearBody {
+export interface LinearBase {
   action: ActionType;
   createdAt: Date;
   organizationId: string;
   url?: string;
   type: UpdateType;
-  data: LinearData;
   updatedFrom?: UpdatedFrom | undefined;
 }
 
@@ -47,7 +46,7 @@ export enum ActionType {
   Remove = `remove`,
 }
 
-export const parseBasePayload = (body: any): SafeParseReturnType<{}, Partial<LinearBody>> =>
+export const parseBasePayload = (body: any): SafeParseReturnType<{}, LinearBase> =>
   z
     .object({
       url: z.string().optional(),
@@ -99,18 +98,18 @@ export const parseBasePayload = (body: any): SafeParseReturnType<{}, Partial<Lin
     })
     .safeParse(body);
 
-export const parseData = (type: string, data: any): SafeParseReturnType<{}, LinearData> => {
-  switch (type) {
-    case `Project`:
-      return parseProjectData(data);
-    case `Issue`:
-      return parseIssueData(data);
-    case `Comment`:
-      return parseCommentData(data);
-    default:
-      return {
-        error: new ZodError([{ path: [0], code: 'custom', message: `Invalid 'type' value in request body` }]),
-        success: false,
-      };
-  }
-};
+// export const parseData = (type: string, data: any): SafeParseReturnType<{}, LinearData> => {
+//   switch (type) {
+//     case `Project`:
+//       return parseProjectData(data);
+//     case `Issue`:
+//       return parseIssueData(data);
+//     case `Comment`:
+//       return parseCommentData(data);
+//     default:
+//       return {
+//         error: new ZodError([{ path: [0], code: 'custom', message: `Invalid 'type' value in request body` }]),
+//         success: false,
+//       };
+//   }
+// };
