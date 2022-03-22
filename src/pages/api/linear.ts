@@ -3,6 +3,7 @@ import * as z from 'zod';
 import { handleProjectEvent } from '../../handlers/project-handler';
 import { ActionType, parseBasePayload, UpdateType } from '../../sanitize/base';
 import { parseProjectUpdate, ProjectData } from '../../sanitize/project';
+import { logger } from '../../utils/log';
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
   const { body, method } = req;
@@ -13,29 +14,27 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 
   const parsed = parseBasePayload(body);
   if (!parsed.success) {
+    logger.error(`Request base parse rejection: ${JSON.stringify(parsed)}`);
     return res.status(400).send({
       message: `Invalid request shape or action - please compare the Linear Webhook documentation to the OpenAPI doc for this project`,
     });
   }
+  logger.info(`Parsed: ${JSON.stringify(parsed)}`);
 
   const { type, action } = parsed.data;
   const { data } = body;
 
   if (type !== UpdateType.Project) {
-    // TEMP EXIT - PROJECT ONLY
     return res.status(202).send({});
   }
 
-  // const sanitized = parseData(type, data); // switch surfaced here?? hand switch values deeper?
   const sanitized = parseProjectData(action, data);
 
   if (!sanitized.success) {
+    logger.error(`Request data parse rejection: ${JSON.stringify(sanitized)}`);
     return res.status(400).send({ message: `Request body 'data' structure was invalid: ${sanitized.error}` });
   }
-
-  console.log(`Body\n`, body);
-  console.log(`Parsed\n`, parsed);
-  console.log(`Sanitized Data`, sanitized.data);
+  logger.info(`Data: ${JSON.stringify(sanitized)}`);
 
   let success: boolean;
   switch (type) {
@@ -46,10 +45,6 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
       return;
   }
 
-  // Query Linear API to get projectId if not available (Comment type only - defer)
-  // Query Linear API to get PB API id from Project Description
-  // PUT to PB API to update description with original update
-
   res.status(200).send({});
 };
 
@@ -59,7 +54,13 @@ const parseProjectData = (action: ActionType, data: any): z.SafeParseReturnType<
       return parseProjectUpdate(data);
     default:
       return {
-        error: new z.ZodError([{ path: [0], code: 'custom', message: `Invalid 'type' value in request body` }]),
+        error: new z.ZodError([
+          {
+            path: [],
+            code: 'custom',
+            message: `Unable to parse req.body.data as the req.action fell through parseProjectData switch-case`,
+          },
+        ]),
         success: false,
       };
   }
