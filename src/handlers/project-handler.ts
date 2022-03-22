@@ -1,5 +1,4 @@
 import axios, { AxiosRequestConfig } from 'axios';
-import { string } from 'zod';
 import { LinearBase, UpdatedFrom } from '../sanitize/base';
 import { ProjectData, ProjectUpdate } from '../sanitize/project';
 import { env } from '../utils/environment';

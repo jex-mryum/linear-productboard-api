@@ -1,8 +1,8 @@
 import * as z from 'zod';
-import { SafeParseReturnType, ZodError } from 'zod';
+import { SafeParseReturnType } from 'zod';
 import isISODate from '../utils/iso-string';
-import { CommentData, parseCommentData } from './comment';
-import { IssueData, parseIssueData } from './issue';
+import { CommentData } from './comment';
+import { IssueData } from './issue';
 import { ProjectData } from './project';
 
 export interface LinearBase {
@@ -97,19 +97,3 @@ export const parseBasePayload = (body: any): SafeParseReturnType<{}, LinearBase>
         .optional(),
     })
     .safeParse(body);
-
-// export const parseData = (type: string, data: any): SafeParseReturnType<{}, LinearData> => {
-//   switch (type) {
-//     case `Project`:
-//       return parseProjectData(data);
-//     case `Issue`:
-//       return parseIssueData(data);
-//     case `Comment`:
-//       return parseCommentData(data);
-//     default:
-//       return {
-//         error: new ZodError([{ path: [0], code: 'custom', message: `Invalid 'type' value in request body` }]),
-//         success: false,
-//       };
-//   }
-// };

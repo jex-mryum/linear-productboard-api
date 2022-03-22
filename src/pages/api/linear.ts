@@ -25,6 +25,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
   const { data } = body;
 
   if (type !== UpdateType.Project) {
+    logger.info(JSON.stringify(body));
     return res.status(202).send({});
   }
 
