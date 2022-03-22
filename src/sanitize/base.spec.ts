@@ -33,7 +33,7 @@ describe(`base sanitization`, () => {
       data: {
         // not evaluated
       },
-      url: 'https://linear.app/mr-yum/project/test-project-change-8f5c9d860b13',
+      //no update or url (create / delete respectively)
       type: 'Project',
       organizationId: 'f72abaec-b3e0-4d06-b429-fa94e20ff4c1',
     });
@@ -41,7 +41,6 @@ describe(`base sanitization`, () => {
     expect(parsed.success && parsed.data).toEqual({
       action: 'update',
       createdAt: new Date('2022-03-16T23:20:34.046Z'),
-      url: 'https://linear.app/mr-yum/project/test-project-change-8f5c9d860b13',
       type: 'Project',
       organizationId: 'f72abaec-b3e0-4d06-b429-fa94e20ff4c1',
     });

@@ -9,7 +9,7 @@ export interface LinearBody {
   action: ActionType;
   createdAt: Date;
   organizationId: string;
-  url: string;
+  url?: string;
   type: UpdateType;
   data: LinearData;
   updatedFrom?: UpdatedFrom | undefined;
@@ -18,6 +18,7 @@ export interface LinearBody {
 export type LinearData = ProjectData | IssueData | CommentData;
 
 export interface UpdatedFrom {
+  title?: string | null;
   updatedAt?: Date | null;
   name?: string | null;
   state?: string | null;
@@ -49,7 +50,7 @@ export enum ActionType {
 export const parseBasePayload = (body: any): SafeParseReturnType<{}, Partial<LinearBody>> =>
   z
     .object({
-      url: z.string(),
+      url: z.string().optional(),
       action: z.enum([`create`, `update`, `remove`]).transform(s => s as ActionType),
       type: z.enum([`Project`, `Issue`, `Comment`]).transform(s => s as UpdateType),
       createdAt: z
@@ -59,6 +60,7 @@ export const parseBasePayload = (body: any): SafeParseReturnType<{}, Partial<Lin
       organizationId: z.string(),
       updatedFrom: z
         .object({
+          title: z.string().nullable().optional(),
           updatedAt: z
             .string()
             .refine(isISODate, { message: `Invalid ISO datestring` })
