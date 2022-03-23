@@ -1,8 +1,8 @@
-import { parseProjectData } from './project';
+import { parseProjectUpdate } from './project';
 
 describe(`project sanitization`, () => {
   it(`\n\tGIVEN project update zod parsing \n\tWHEN complete and valid project update \n\tTHEN successful parse`, () => {
-    const parsed = parseProjectData({
+    const parsed = parseProjectUpdate({
       id: '9cde8724-0f3d-422d-818a-344eec37d886',
       createdAt: '2022-03-16T06:00:38.209Z',
       updatedAt: '2022-03-16T23:13:33.910Z',
@@ -53,7 +53,7 @@ describe(`project sanitization`, () => {
     });
   });
   it(`\n\tGIVEN project update zod parsing \n\tWHEN partial and valid project update \n\tTHEN successful parse`, () => {
-    const parsed = parseProjectData({
+    const parsed = parseProjectUpdate({
       id: '9cde8724-0f3d-422d-818a-344eec37d886',
       createdAt: '2022-03-16T06:00:38.209Z',
       updatedAt: '2022-03-16T23:13:33.910Z',
@@ -98,7 +98,7 @@ describe(`project sanitization`, () => {
     });
   });
   it(`\n\tGIVEN project update zod parsing \n\tWHEN invalid typed project update \n\tTHEN rejected parse`, () => {
-    const parsed = parseProjectData({
+    const parsed = parseProjectUpdate({
       id: 1, // should be a string
       createdAt: new Date('2022-03-16T06:00:38.209Z'),
       updatedAt: new Date('2022-03-16T23:13:33.910Z'),
@@ -122,7 +122,7 @@ describe(`project sanitization`, () => {
     expect(parsed.success).toBe(false);
   });
   it(`\n\tGIVEN project update zod parsing \n\tWHEN incomplete project update \n\tTHEN rejected parse`, () => {
-    const parsed = parseProjectData({
+    const parsed = parseProjectUpdate({
       // missing id
       createdAt: new Date('2022-03-16T06:00:38.209Z'),
       updatedAt: new Date('2022-03-16T23:13:33.910Z'),
