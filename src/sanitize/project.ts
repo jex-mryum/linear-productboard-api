@@ -1,5 +1,7 @@
 import * as z from 'zod';
 import isISODate from '../utils/iso-string';
+import { constructSafeParseError } from '../utils/zod';
+import { ActionType } from './base';
 
 interface ProjectCreate {
   // ACTIONS - Update Description, Update Lead (Owner), Update Name, Update Status (enum?)
@@ -140,3 +142,14 @@ export const parseProjectDelete = (payload: any): z.SafeParseReturnType<{}, Proj
         .transform(s => new Date(s)),
     })
     .safeParse(payload);
+
+export const parseProjectData = (action: ActionType, data: any): z.SafeParseReturnType<{}, ProjectData> => {
+  switch (action) {
+    case `update`:
+      return parseProjectUpdate(data);
+    default:
+      return constructSafeParseError(
+        `Unable to parse req.body.data as the req.action fell through parseProjectData switch-case`,
+      );
+  }
+};

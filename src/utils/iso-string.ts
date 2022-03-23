@@ -1,7 +1,6 @@
-const isISODate = (string: string) => {
-  return new RegExp(
+const isISODate = (string: string) =>
+  new RegExp(
     /(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))|(\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d([+-][0-2]\d:[0-5]\d|Z))/,
   ).test(string);
-};
 
 export default isISODate;

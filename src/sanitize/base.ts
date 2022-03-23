@@ -5,13 +5,28 @@ import { CommentData } from './comment';
 import { IssueData } from './issue';
 import { ProjectData } from './project';
 
-export interface LinearBase {
-  action: ActionType;
+export interface LinearCreateBase {
+  action: ActionType.Create;
   createdAt: Date;
   organizationId: string;
-  url?: string;
+  url: string;
   type: UpdateType;
-  updatedFrom?: UpdatedFrom | undefined;
+}
+
+export interface LinearUpdateBase {
+  action: ActionType.Update;
+  createdAt: Date;
+  organizationId: string;
+  url: string;
+  type: UpdateType;
+  updatedFrom: UpdatedFrom;
+}
+
+export interface LinearRemoveBase {
+  action: ActionType.Remove;
+  createdAt: Date;
+  organizationId: string;
+  type: UpdateType;
 }
 
 export type LinearData = ProjectData | IssueData | CommentData;
@@ -46,54 +61,79 @@ export enum ActionType {
   Remove = `remove`,
 }
 
-export const parseBasePayload = (body: any): SafeParseReturnType<{}, LinearBase> =>
+export const parseCreateBase = (body: any): SafeParseReturnType<{}, LinearCreateBase> =>
   z
     .object({
-      url: z.string().optional(),
-      action: z.enum([`create`, `update`, `remove`]).transform(s => s as ActionType),
+      url: z.string(),
+      action: z.enum([`create`]).transform(s => s as ActionType.Create),
       type: z.enum([`Project`, `Issue`, `Comment`]).transform(s => s as UpdateType),
       createdAt: z
         .string()
         .refine(isISODate, { message: `Invalid ISO datestring` })
         .transform(s => new Date(s)),
       organizationId: z.string(),
-      updatedFrom: z
-        .object({
-          title: z.string().nullable().optional(),
-          updatedAt: z
-            .string()
-            .refine(isISODate, { message: `Invalid ISO datestring` })
-            .transform(s => (s ? new Date(s) : null))
-            .nullable(),
-          name: z.string().nullable().optional(),
-          state: z.string().optional(),
-          body: z.string().nullable().optional(),
-          leadId: z.string().nullable().optional(),
-          stateId: z.string().nullable().optional(),
-          sortOrder: z.number().optional(),
-          assigneeId: z.string().nullable().optional(),
-          description: z.string().nullable().optional(),
-          memberIds: z.array(z.string().nullable()).optional(),
-          cycleId: z
-            .string()
-            .refine(isISODate, { message: `Invalid ISO datestring` })
-            .transform(s => new Date(s))
-            .nullable()
-            .optional(),
-          editedAt: z
-            .string()
-            .refine(isISODate, { message: `Invalid ISO datestring` })
-            .transform(s => new Date(s))
-            .nullable()
-            .optional(),
-          startAt: z.string().nullable().optional(),
-          startedDate: z
-            .string()
-            .refine(isISODate, { message: `Invalid ISO datestring` })
-            .transform(s => new Date(s))
-            .nullable()
-            .optional(),
-        })
-        .optional(),
+    })
+    .safeParse(body);
+
+export const parseUpdateBase = (body: any): SafeParseReturnType<{}, LinearUpdateBase> =>
+  z
+    .object({
+      url: z.string(),
+      action: z.enum([`update`]).transform(s => s as ActionType.Update),
+      type: z.enum([`Project`, `Issue`, `Comment`]).transform(s => s as UpdateType),
+      createdAt: z
+        .string()
+        .refine(isISODate, { message: `Invalid ISO datestring` })
+        .transform(s => new Date(s)),
+      organizationId: z.string(),
+      updatedFrom: z.object({
+        title: z.string().nullable().optional(),
+        updatedAt: z
+          .string()
+          .refine(isISODate, { message: `Invalid ISO datestring` })
+          .transform(s => (s ? new Date(s) : null))
+          .nullable(),
+        name: z.string().nullable().optional(),
+        state: z.string().optional(),
+        body: z.string().nullable().optional(),
+        leadId: z.string().nullable().optional(),
+        stateId: z.string().nullable().optional(),
+        sortOrder: z.number().optional(),
+        assigneeId: z.string().nullable().optional(),
+        description: z.string().nullable().optional(),
+        memberIds: z.array(z.string().nullable()).optional(),
+        cycleId: z
+          .string()
+          .refine(isISODate, { message: `Invalid ISO datestring` })
+          .transform(s => new Date(s))
+          .nullable()
+          .optional(),
+        editedAt: z
+          .string()
+          .refine(isISODate, { message: `Invalid ISO datestring` })
+          .transform(s => new Date(s))
+          .nullable()
+          .optional(),
+        startAt: z.string().nullable().optional(),
+        startedDate: z
+          .string()
+          .refine(isISODate, { message: `Invalid ISO datestring` })
+          .transform(s => new Date(s))
+          .nullable()
+          .optional(),
+      }),
+    })
+    .safeParse(body);
+
+export const parseRemoveBase = (body: any): SafeParseReturnType<{}, LinearRemoveBase> =>
+  z
+    .object({
+      action: z.enum([`remove`]).transform(s => s as ActionType.Remove),
+      type: z.enum([`Project`, `Issue`, `Comment`]).transform(s => s as UpdateType),
+      createdAt: z
+        .string()
+        .refine(isISODate, { message: `Invalid ISO datestring` })
+        .transform(s => new Date(s)),
+      organizationId: z.string(),
     })
     .safeParse(body);

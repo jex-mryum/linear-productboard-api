@@ -1,3 +1,1 @@
-import { CommentData } from '../sanitize/comment';
-
-export const commentEventHandler = (data: CommentData) => {};
+export const removeEventHandler = () => {};
