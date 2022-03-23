@@ -1,4 +1,4 @@
-import { parseBasePayload, parseUpdateBase } from './base';
+import { parseUpdateBase } from './base';
 
 describe(`base sanitization`, () => {
   it(`\n\tGIVEN zod base parsing \n\tWHEN complete and valid base data body received with nulled update values \n\tTHEN successful parsing`, () => {
