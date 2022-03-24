@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosResponseHeaders } from 'axios';
 import { LinearUpdateBase, UpdatedFrom } from '../sanitize/base';
 import { ProjectData, ProjectUpdate } from '../sanitize/project';
-import { env } from '../utils/environment';
+import env from '../utils/environment';
 import { logger } from '../utils/log';
 import isUUIDv4 from '../utils/uuid';
 

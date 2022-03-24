@@ -1,19 +1,19 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as z from 'zod';
-import { handleUpdateEvent } from '../../handlers/update-handler';
+import { getProjectById } from '../../calls/linear';
+import { updatePBFeatureById } from '../../calls/productboard';
 import {
   ActionType,
+  ElementType,
   LinearCreateBase,
   LinearRemoveBase,
   LinearUpdateBase,
   parseCreateBase,
   parseRemoveBase,
   parseUpdateBase,
-  UpdateType,
 } from '../../sanitize/base';
-import { parseProjectData } from '../../sanitize/project';
-import productboardReqConfig from '../../utils/axios-config';
 import { logger } from '../../utils/log';
+import isUUIDv4 from '../../utils/uuid';
 import { constructSafeParseError } from '../../utils/zod';
 
 export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> => {
@@ -54,48 +54,27 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
 
   const { type, action } = parsedBase.data;
   const { data } = body;
-
-  let parsedData;
+  let projectId: string;
+  let progress: number;
   switch (type) {
-    case UpdateType.Project:
-      parsedData = parseProjectData(action, data);
+    case ElementType.Project:
+      projectId = data.id;
+      progress = await getProjectById(projectId);
       break;
-    case UpdateType.Issue:
-    case UpdateType.Comment:
+    case ElementType.Issue:
+      projectId = data.projectId;
+      progress = await getProjectById(projectId);
     default:
-      logger.info(JSON.stringify(body)); // for development only
-      return res.status(202).send({});
+      logger.error(`Failed to source projectId from webhook`);
+      progress = -1;
   }
 
-  if (!parsedData.success) {
-    logger.error(`Request data parse rejection: ${JSON.stringify(parsedData)}`);
-    return res.status(400).send({ message: `Request body 'data' structure was invalid: ${parsedData.error}` });
+  const { description } = data;
+  if (!isUUIDv4(description)) {
+    logger.error(`Project description did not contain a valid Productboard API Id`);
+    return res.status(400).send({});
   }
-
-  let handled: boolean;
-  switch (action) {
-    case `update`:
-      handled = await handleUpdateEvent(productboardReqConfig, {
-        ...parsedBase.data,
-        data: parsedData.data,
-      });
-      break;
-    case `create`:
-    // handled = await handleCreateEvent(productboardReqConfig, {
-    //   ...parsedBase.data,
-    //   data: parsedData.data,
-    // });
-    // break;
-    case `remove`:
-    // handled = await handleRemoveEvent(productboardReqConfig, {
-    //   ...parsedBase.data,
-    //   data: parsedData.data,
-    // });
-    // break;
-    default:
-      handled = false;
-  }
-  const { id } = parsedData.data;
-  logger.info(`${handled ? `Succeeded` : `Failed`} in handling ${action} for ${type}: ${id}`);
-  handled ? res.status(200).send({ parsedData }) : res.status(500).send({ message: `Unhandled error occured` });
+  const productboardFeatureId = description;
+  const handled = await updatePBFeatureById(productboardFeatureId, progress);
+  handled ? res.status(200).send({}) : res.status(500).send({ message: `Unhandled error occured` });
 };
