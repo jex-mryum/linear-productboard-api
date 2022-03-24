@@ -1,7 +1,7 @@
 import * as z from 'zod';
 require('dotenv').config();
 
-export const env = z
+const env = z
   .object({
     productboardApiToken: z.string().nonempty(),
     productboardApiBaseUrl: z.string().nonempty(),
@@ -12,3 +12,5 @@ export const env = z
     productboardApiBaseUrl: process.env.PRODUCTBOARD_API_BASE_URL,
     linearApiKey: process.env.LINEAR_API_KEY,
   });
+
+export default env;

@@ -11,7 +11,7 @@ import {
   parseUpdateBase,
   UpdateType,
 } from '../../sanitize/base';
-import { parseProjectData, parseProjectUpdate, ProjectData } from '../../sanitize/project';
+import { parseProjectData } from '../../sanitize/project';
 import productboardReqConfig from '../../utils/axios-config';
 import { logger } from '../../utils/log';
 import { constructSafeParseError } from '../../utils/zod';
@@ -51,7 +51,6 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
       message: `Invalid request shape or action - please compare the Linear Webhook documentation to the OpenAPI doc for this project`,
     });
   }
-  logger.info(`Parsed: ${JSON.stringify(parsedBase)}`);
 
   const { type, action } = parsedBase.data;
   const { data } = body;
@@ -64,7 +63,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     case UpdateType.Issue:
     case UpdateType.Comment:
     default:
-      logger.info(JSON.stringify(body));
+      logger.info(JSON.stringify(body)); // for development only
       return res.status(202).send({});
   }
 
@@ -72,7 +71,6 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     logger.error(`Request data parse rejection: ${JSON.stringify(parsedData)}`);
     return res.status(400).send({ message: `Request body 'data' structure was invalid: ${parsedData.error}` });
   }
-  logger.info(`Data: ${JSON.stringify(parsedData)}`);
 
   let handled: boolean;
   switch (action) {
@@ -83,10 +81,21 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
       });
       break;
     case `create`:
+    // handled = await handleCreateEvent(productboardReqConfig, {
+    //   ...parsedBase.data,
+    //   data: parsedData.data,
+    // });
+    // break;
     case `remove`:
+    // handled = await handleRemoveEvent(productboardReqConfig, {
+    //   ...parsedBase.data,
+    //   data: parsedData.data,
+    // });
+    // break;
     default:
       handled = false;
   }
-
-  handled ? res.status(200).send({}) : res.status(500).send({ message: `Unhandled error occured` });
+  const { id } = parsedData.data;
+  logger.info(`${handled ? `Succeeded` : `Failed`} in handling ${action} for ${type}: ${id}`);
+  handled ? res.status(200).send({ parsedData }) : res.status(500).send({ message: `Unhandled error occured` });
 };

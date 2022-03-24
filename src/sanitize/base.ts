@@ -10,7 +10,7 @@ export interface LinearCreateBase {
   createdAt: Date;
   organizationId: string;
   url: string;
-  type: UpdateType;
+  type: ElementType;
 }
 
 export interface LinearUpdateBase {
@@ -18,7 +18,7 @@ export interface LinearUpdateBase {
   createdAt: Date;
   organizationId: string;
   url: string;
-  type: UpdateType;
+  type: ElementType;
   updatedFrom: UpdatedFrom;
 }
 
@@ -26,7 +26,7 @@ export interface LinearRemoveBase {
   action: ActionType.Remove;
   createdAt: Date;
   organizationId: string;
-  type: UpdateType;
+  type: ElementType;
 }
 
 export type LinearData = ProjectData | IssueData | CommentData;
@@ -49,7 +49,7 @@ export interface UpdatedFrom {
   editedAt?: Date | null;
 }
 
-export enum UpdateType {
+export enum ElementType {
   Issue = `Issue`,
   Project = `Project`,
   Comment = `Comment`,
@@ -66,7 +66,7 @@ export const parseCreateBase = (body: any): SafeParseReturnType<{}, LinearCreate
     .object({
       url: z.string(),
       action: z.enum([`create`]).transform(s => s as ActionType.Create),
-      type: z.enum([`Project`, `Issue`, `Comment`]).transform(s => s as UpdateType),
+      type: z.enum([`Project`, `Issue`, `Comment`]).transform(s => s as ElementType),
       createdAt: z
         .string()
         .refine(isISODate, { message: `Invalid ISO datestring` })
@@ -80,7 +80,7 @@ export const parseUpdateBase = (body: any): SafeParseReturnType<{}, LinearUpdate
     .object({
       url: z.string(),
       action: z.enum([`update`]).transform(s => s as ActionType.Update),
-      type: z.enum([`Project`, `Issue`, `Comment`]).transform(s => s as UpdateType),
+      type: z.enum([`Project`, `Issue`, `Comment`]).transform(s => s as ElementType),
       createdAt: z
         .string()
         .refine(isISODate, { message: `Invalid ISO datestring` })
@@ -129,7 +129,7 @@ export const parseRemoveBase = (body: any): SafeParseReturnType<{}, LinearRemove
   z
     .object({
       action: z.enum([`remove`]).transform(s => s as ActionType.Remove),
-      type: z.enum([`Project`, `Issue`, `Comment`]).transform(s => s as UpdateType),
+      type: z.enum([`Project`, `Issue`, `Comment`]).transform(s => s as ElementType),
       createdAt: z
         .string()
         .refine(isISODate, { message: `Invalid ISO datestring` })
