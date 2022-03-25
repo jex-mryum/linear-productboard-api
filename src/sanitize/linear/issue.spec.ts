@@ -1,4 +1,4 @@
-import { parseIssueData } from '../sanitize/issue';
+import { parseIssueData } from './issue';
 import { ActionType } from './base';
 
 describe(`issue sanitization`, () => {

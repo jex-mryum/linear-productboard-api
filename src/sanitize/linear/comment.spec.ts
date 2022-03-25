@@ -1,4 +1,4 @@
-import { parseCommentData } from '../sanitize/comment';
+import { parseCommentData } from './comment';
 
 describe(`comment sanitization`, () => {
   it(`\n\tGIVEN zod comment parsing \n\tWHEN valid comment data body received \n\tTHEN successful parsing`, () => {

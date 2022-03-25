@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as z from 'zod';
-import { getProjectById, getProjectByIssueId } from '../../calls/linear';
-import { updatePBFeatureById } from '../../calls/productboard';
+import { ProgressUpdate, UpdateOutcome, updateProductboard } from '../../domain/productboard';
+import { getProjectById, getProjectByIssueId } from '../../http/linear';
 import {
   ActionType,
   ElementType,
@@ -11,10 +11,10 @@ import {
   parseCreateBase,
   parseRemoveBase,
   parseUpdateBase,
-} from '../../sanitize/base';
-import { parseProjectData, ProjectData } from '../../sanitize/project';
-import { IssueData, parseIssueData } from '../../sanitize/issue';
-import { CommentData, parseCommentData } from '../../sanitize/comment';
+} from '../../sanitize/linear/base';
+import { CommentData, parseCommentData } from '../../sanitize/linear/comment';
+import { IssueData, parseIssueData } from '../../sanitize/linear/issue';
+import { parseProjectData, ProjectData } from '../../sanitize/linear/project';
 import { logger } from '../../utils/log';
 import isUUIDv4 from '../../utils/uuid';
 import { constructSafeParseError } from '../../utils/zod';
@@ -54,6 +54,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
   }
 
   const { data } = body;
+
   const { type, action } = parsedBase.data;
 
   logger.info(`Received ${action} ${type} request`);
@@ -81,7 +82,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     });
   }
 
-  let project;
+  let project: ProgressUpdate;
   switch (type) {
     case ElementType.Project:
       const projectData = parsedData.data as ProjectData;
@@ -106,6 +107,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
   }
 
   logger.info(`Attempting to update PB feature ${project.featureId}`);
-  const handled = project.progress !== -1 ? await updatePBFeatureById(project) : false;
-  handled ? res.status(200).send({}) : res.status(500).send({ message: `Unhandled error occured` });
+  const outcome: UpdateOutcome = project.progress !== -1 ? await updateProductboard(project) : UpdateOutcome.Failed;
+  logger.info(outcome);
+  return outcome === UpdateOutcome.Failed ? res.status(500).send({}) : res.status(200).send({});
 };

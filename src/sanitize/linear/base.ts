@@ -1,6 +1,6 @@
 import * as z from 'zod';
 import { SafeParseReturnType } from 'zod';
-import isISODate from '../utils/iso-string';
+import isISODate from '../../utils/iso-string';
 import { CommentData } from './comment';
 import { IssueData } from './issue';
 import { ProjectData } from './project';

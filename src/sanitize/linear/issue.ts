@@ -1,6 +1,6 @@
 import * as z from 'zod';
-import isISODate from '../utils/iso-string';
-import { constructSafeParseError } from '../utils/zod';
+import isISODate from '../../utils/iso-string';
+import { constructSafeParseError } from '../../utils/zod';
 import { ActionType } from './base';
 
 export interface IssueCreate {

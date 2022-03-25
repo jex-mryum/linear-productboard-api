@@ -1,6 +1,6 @@
 import * as z from 'zod';
-import isISODate from '../utils/iso-string';
-import { constructSafeParseError } from '../utils/zod';
+import isISODate from '../../utils/iso-string';
+import { constructSafeParseError } from '../../utils/zod';
 import { ActionType } from './base';
 
 interface ProjectCreate {
@@ -16,10 +16,10 @@ interface ProjectCreate {
   state: string;
   creatorId: string;
   sortOrder: number;
-  issueCountHistory: Array<string>;
-  completedIssueCountHistory: Array<string>;
-  scopeHistory: Array<string>;
-  completedScopeHistory: Array<string>;
+  issueCountHistory: Array<number>;
+  completedIssueCountHistory: Array<number>;
+  scopeHistory: Array<number>;
+  completedScopeHistory: Array<number>;
   slackNewIssue: boolean;
   slackIssueComments: boolean;
   slackIssueStatuses: boolean;
@@ -71,10 +71,10 @@ export const parseProjectCreate = (payload: any): z.SafeParseReturnType<{}, Proj
       state: z.string(),
       creatorId: z.string(),
       sortOrder: z.number(),
-      issueCountHistory: z.array(z.string()),
-      completedIssueCountHistory: z.array(z.string()),
-      scopeHistory: z.array(z.string()),
-      completedScopeHistory: z.array(z.string()),
+      issueCountHistory: z.array(z.number()),
+      completedIssueCountHistory: z.array(z.number()),
+      scopeHistory: z.array(z.number()),
+      completedScopeHistory: z.array(z.number()),
       slackNewIssue: z.boolean(),
       slackIssueComments: z.boolean(),
       slackIssueStatuses: z.boolean(),
@@ -102,10 +102,10 @@ export const parseProjectUpdate = (payload: any): z.SafeParseReturnType<{}, Proj
       state: z.string(),
       creatorId: z.string(),
       sortOrder: z.number(),
-      issueCountHistory: z.array(z.string()),
-      completedIssueCountHistory: z.array(z.string()),
-      scopeHistory: z.array(z.string()),
-      completedScopeHistory: z.array(z.string()),
+      issueCountHistory: z.array(z.number()),
+      completedIssueCountHistory: z.array(z.number()),
+      scopeHistory: z.array(z.number()),
+      completedScopeHistory: z.array(z.number()),
       slackNewIssue: z.boolean(),
       slackIssueComments: z.boolean(),
       slackIssueStatuses: z.boolean(),
@@ -140,10 +140,10 @@ export const parseProjectRemove = (payload: any): z.SafeParseReturnType<{}, Proj
       state: z.string(),
       creatorId: z.string(),
       sortOrder: z.number(),
-      issueCountHistory: z.array(z.string()),
-      completedIssueCountHistory: z.array(z.string()),
-      scopeHistory: z.array(z.string()),
-      completedScopeHistory: z.array(z.string()),
+      issueCountHistory: z.array(z.number()),
+      completedIssueCountHistory: z.array(z.number()),
+      scopeHistory: z.array(z.number()),
+      completedScopeHistory: z.array(z.number()),
       slackNewIssue: z.boolean(),
       slackIssueComments: z.boolean(),
       slackIssueStatuses: z.boolean(),
