@@ -93,7 +93,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
       const issueData = parsedData.data as IssueData;
       progress = await getProjectById(issueData.projectId);
     case ElementType.Comment:
-      getIssueById(parsedData.data.id);
+      const commentData = parsedData.data as CommentData;
+      getIssueById(commentData.issueId);
       return res.status(200).send({});
     default:
       logger.error(`Failed to source projectId from webhook`);
