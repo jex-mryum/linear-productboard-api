@@ -39,6 +39,19 @@ export interface ProjectDelete extends ProjectCreate {
 
 export type ProjectData = ProjectCreate | ProjectUpdate | ProjectDelete;
 
+export const parseProjectData = (action: string, data: {}): z.SafeParseReturnType<{}, ProjectData> => {
+  switch (action) {
+    case ActionType.Create:
+      return parseProjectCreate(data);
+    case ActionType.Update:
+      return parseProjectUpdate(data);
+    case ActionType.Remove:
+      return parseProjectRemove(data);
+    default:
+      return constructSafeParseError(`Failed to parse Project data payload`);
+  }
+};
+
 export const parseProjectCreate = (payload: any): z.SafeParseReturnType<{}, ProjectCreate> =>
   z
     .object({
@@ -108,7 +121,7 @@ export const parseProjectUpdate = (payload: any): z.SafeParseReturnType<{}, Proj
     })
     .safeParse(payload);
 
-export const parseProjectDelete = (payload: any): z.SafeParseReturnType<{}, ProjectDelete> =>
+export const parseProjectRemove = (payload: any): z.SafeParseReturnType<{}, ProjectDelete> =>
   z
     .object({
       id: z.string(),
@@ -142,14 +155,3 @@ export const parseProjectDelete = (payload: any): z.SafeParseReturnType<{}, Proj
         .transform(s => new Date(s)),
     })
     .safeParse(payload);
-
-export const parseProjectData = (action: ActionType, data: any): z.SafeParseReturnType<{}, ProjectData> => {
-  switch (action) {
-    case `update`:
-      return parseProjectUpdate(data);
-    default:
-      return constructSafeParseError(
-        `Unable to parse req.body.data as the req.action fell through parseProjectData switch-case`,
-      );
-  }
-};

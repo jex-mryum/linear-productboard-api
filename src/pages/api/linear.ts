@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as z from 'zod';
-import { getProjectById } from '../../calls/linear';
+import { getIssueById, getProjectById } from '../../calls/linear';
 import { updatePBFeatureById } from '../../calls/productboard';
 import {
   ActionType,
@@ -12,6 +12,9 @@ import {
   parseRemoveBase,
   parseUpdateBase,
 } from '../../sanitize/base';
+import { parseProjectData, ProjectData } from '../../sanitize/project';
+import { IssueData, parseIssueData } from '../../sanitize/issue';
+import { CommentData, parseCommentData } from '../../sanitize/comment';
 import { logger } from '../../utils/log';
 import isUUIDv4 from '../../utils/uuid';
 import { constructSafeParseError } from '../../utils/zod';
@@ -40,30 +43,58 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
       parsedBase = parseRemoveBase(body);
       break;
     default:
-      parsedBase = constructSafeParseError(
-        `Failed to parse request base - fell through switch-case (src/pages/api/linear)`,
-      );
+      parsedBase = constructSafeParseError(`Failed to parse request base - fell through switch-case`);
   }
 
   if (!parsedBase.success) {
     logger.error(`Request base parse rejection: ${JSON.stringify(parsedBase)}`);
     return res.status(400).send({
-      message: `Invalid request shape or action - please compare the Linear Webhook documentation to the OpenAPI doc for this project`,
+      message: `Invalid request shape - please compare the Linear Webhook documentation to the OpenAPI doc for this project`,
     });
   }
 
-  const { type, action } = parsedBase.data;
   const { data } = body;
+  const { type, action } = parsedBase.data;
+
+  // if comment, get issue by commentId
+  // then get project by Id
+  // then update progress
+  let parsedData:
+    | z.SafeParseReturnType<{}, ProjectData>
+    | z.SafeParseReturnType<{}, IssueData>
+    | z.SafeParseReturnType<{}, CommentData>;
+  switch (type) {
+    case ElementType.Project:
+      parsedData = parseProjectData(action, data);
+      break;
+    case ElementType.Issue:
+      parsedData = parseIssueData(action, data);
+      break;
+    case ElementType.Comment:
+      parsedData = parseCommentData(data);
+      break;
+  }
+
+  if (!parsedData.success) {
+    logger.error(`Request ${type} data parse rejection: ${JSON.stringify(parsedData)}`);
+    return res.status(400).send({
+      message: `Invalid request shape - please compare the Linear Webhook documentation to the OpenAPI doc for this project`,
+    });
+  }
+
   let projectId: string;
   let progress: number;
   switch (type) {
     case ElementType.Project:
-      projectId = data.id;
-      progress = await getProjectById(projectId);
+      const projectData = parsedData.data as ProjectData;
+      progress = await getProjectById(projectData.id);
       break;
     case ElementType.Issue:
-      projectId = data.projectId;
-      progress = await getProjectById(projectId);
+      const issueData = parsedData.data as IssueData;
+      progress = await getProjectById(issueData.projectId);
+    case ElementType.Comment:
+      getIssueById(parsedData.data.id);
+      return res.status(200).send({});
     default:
       logger.error(`Failed to source projectId from webhook`);
       progress = -1;
@@ -75,6 +106,6 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     return res.status(400).send({});
   }
   const productboardFeatureId = description;
-  const handled = await updatePBFeatureById(productboardFeatureId, progress);
+  const handled = progress === -1 ? await updatePBFeatureById(productboardFeatureId, progress) : false;
   handled ? res.status(200).send({}) : res.status(500).send({ message: `Unhandled error occured` });
 };

@@ -7,3 +7,8 @@ export const getProjectById = async (id: string): Promise<number> => {
   const project = await linearClient.project(id);
   return project.progress;
 };
+
+export const getIssueById = async (id: string) => {
+  const issue = await linearClient.issue(id);
+  console.log(issue);
+};
