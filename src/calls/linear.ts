@@ -3,15 +3,13 @@ import env from '../utils/environment';
 
 const linearClient = new LinearClient({ apiKey: env.linearApiKey });
 
-export const getProjectById = async (id: string): Promise<number> => {
+export const getProjectById = async (id: string): Promise<{ progress: number; featureId: string }> => {
   const project = await linearClient.project(id);
-  return project.progress;
+  return { progress: project.progress, featureId: project.description };
 };
 
-export const getIssueById = async (id: string) => {
-  console.log(`inside block`);
-  console.log(id);
-
+export const getProjectByIssueId = async (id: string): Promise<{ progress: number; featureId: string }> => {
   const issue = await linearClient.issue(id);
-  console.log(`Issue: `, issue);
+  const project = await issue.project;
+  return project ? { progress: project.progress, featureId: project.description } : { progress: -1, featureId: `` };
 };

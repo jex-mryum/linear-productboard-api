@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import * as z from 'zod';
-import { getIssueById, getProjectById } from '../../calls/linear';
+import { getProjectById, getProjectByIssueId } from '../../calls/linear';
 import { updatePBFeatureById } from '../../calls/productboard';
 import {
   ActionType,
@@ -56,9 +56,6 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
   const { data } = body;
   const { type, action } = parsedBase.data;
 
-  // if comment, get issue by commentId
-  // then get project by Id
-  // then update progress
   let parsedData:
     | z.SafeParseReturnType<{}, ProjectData>
     | z.SafeParseReturnType<{}, IssueData>
@@ -82,31 +79,29 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     });
   }
 
-  let projectId: string;
-  let progress: number;
+  let project;
   switch (type) {
     case ElementType.Project:
       const projectData = parsedData.data as ProjectData;
-      progress = await getProjectById(projectData.id);
+      project = await getProjectById(projectData.id);
       break;
     case ElementType.Issue:
       const issueData = parsedData.data as IssueData;
-      progress = await getProjectById(issueData.projectId);
+      project = await getProjectById(issueData.projectId);
     case ElementType.Comment:
       const commentData = parsedData.data as CommentData;
-      getIssueById(commentData.issueId);
-      return res.status(200).send({});
+      project = await getProjectByIssueId(commentData.issueId);
+      break;
     default:
       logger.error(`Failed to source projectId from webhook`);
-      progress = -1;
+      project = { progress: -1, featureId: '' };
   }
 
-  const { description } = data;
-  if (!isUUIDv4(description)) {
+  if (!isUUIDv4(project.featureId)) {
     logger.error(`Project description did not contain a valid Productboard API Id`);
     return res.status(400).send({});
   }
-  const productboardFeatureId = description;
-  const handled = progress === -1 ? await updatePBFeatureById(productboardFeatureId, progress) : false;
+
+  const handled = project.progress !== -1 ? await updatePBFeatureById(project) : false;
   handled ? res.status(200).send({}) : res.status(500).send({ message: `Unhandled error occured` });
 };
