@@ -87,6 +87,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
       break;
     case ElementType.Issue:
       const issueData = parsedData.data as IssueData;
+      console.log(issueData);
+
       project = await getProjectById(issueData.projectId);
     case ElementType.Comment:
       const commentData = parsedData.data as CommentData;
