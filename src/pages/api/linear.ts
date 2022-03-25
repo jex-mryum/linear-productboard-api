@@ -56,6 +56,8 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
   const { data } = body;
   const { type, action } = parsedBase.data;
 
+  logger.info(`Received ${action} ${type} request`);
+
   let parsedData:
     | z.SafeParseReturnType<{}, ProjectData>
     | z.SafeParseReturnType<{}, IssueData>
@@ -103,6 +105,7 @@ export default async (req: NextApiRequest, res: NextApiResponse): Promise<void> 
     return res.status(400).send({});
   }
 
+  logger.info(`Attempting to update PB feature ${project.featureId}`);
   const handled = project.progress !== -1 ? await updatePBFeatureById(project) : false;
   handled ? res.status(200).send({}) : res.status(500).send({ message: `Unhandled error occured` });
 };
