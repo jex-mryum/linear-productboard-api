@@ -5,8 +5,6 @@ import { logger } from '../utils/log';
 const linearClient = new LinearClient({ apiKey: env.linearApiKey });
 
 export const getProjectById = async (id: string): Promise<{ progress: number; featureId: string }> => {
-  console.log(`ID provided1: `, id);
-
   try {
     const project = await linearClient.project(id);
     return { progress: project.progress, featureId: project.description };
@@ -17,7 +15,6 @@ export const getProjectById = async (id: string): Promise<{ progress: number; fe
 };
 
 export const getProjectByIssueId = async (id: string): Promise<{ progress: number; featureId: string }> => {
-  console.log(`ID provided2: `, id);
   try {
     const issue = await linearClient.issue(id);
     const project = await issue.project;
