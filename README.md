@@ -1,5 +1,14 @@
 # Linear Productboard Integration
 
+## Usage
+
+- Go to the Productboard feature that you wish to link to a Linear project
+- Copy the `API Id` field to your clipboard
+- Paste that value into the `description` of the Linear Project
+- Done!
+
+Now all actions related to that project or its issues will update the progress in the Productboard features description
+
 ## Getting Started
 
 **Development**  
