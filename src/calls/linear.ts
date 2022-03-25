@@ -9,6 +9,8 @@ export const getProjectById = async (id: string): Promise<number> => {
 };
 
 export const getIssueById = async (id: string) => {
+  console.log(`inside block`);
+
   const issue = await linearClient.issue(id);
-  console.log(issue);
+  console.log(`Issue: `, issue);
 };
