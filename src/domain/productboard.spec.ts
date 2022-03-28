@@ -1,46 +1,30 @@
-import { createStatePreservedDescription, delimiter, extractProgress } from './productboard';
+import { useStatePreservingDescription, delimiter } from '../domain/productboard';
 
-const date = `2022-03-28T02:57:56.638Z`;
+describe(`state preserving descriptions`, () => {
+  const now = () => new Date(`2020-01-01`);
+  const create = useStatePreservingDescription(now);
+  const progress = 0.5;
 
-describe(`extraction`, () => {
-  it(`GIVEN extraction WHEN not valid object THEN returns undefined`, () => {
-    expect(extractProgress(`<p>xyz${delimiter}123</p>`)).toBeUndefined();
-  });
-  it(`GIVEN extraction WHEN valid object THEN extract progress`, () => {
-    expect(extractProgress(`{"updatedAt": "${date}", "progress":0.5}${delimiter}State to preserve`)).toBe(0.5);
-  });
-});
-describe(`create description`, () => {
-  it(`GIVEN state WHEN update WITH NO progress change THEN return same`, () => {
-    expect(
-      createStatePreservedDescription(() => new Date(date))(
-        0.5,
-        `{"updatedAt": "${date}", "progress":0.5}${delimiter}State to preserve`,
-      ),
-    ).toBeUndefined();
-  });
-  it(`GIVEN state WHEN update WITH progress change THEN return updated`, () => {
-    expect(
-      createStatePreservedDescription(() => new Date(date))(
-        0.6,
-        `{"updatedAt":"${date}","progress":0.5}${delimiter}State to preserve`,
-      ),
-    ).toBe(`{
-  "updatedAt": "2022-03-28T02:57:56.638Z",
-  "progress": 0.6
+  const delimitedState = `Lorem${delimiter}ipsum`;
+  const undelimitedState = `Lorem ipsum`;
+  it(`\nGIVEN delimited state \nWHEN create message\nTHEN preserve state below delimiter`, () => {
+    expect(create(progress, delimitedState)).toBe(`{
+  "updatedAt": "2020-01-01T00:00:00.000Z",
+  "progress": 0.5
 }
 
-{"updatedAt":"2022-03-28T02:57:56.638Z","progress":0.5}${delimiter}State to preserve`);
-  });
+DO_NOT_DELETE_linear_productboard_integration_delimiter
 
-  it(`GIVEN no state WHEN update WITH progress change THEN return same`, () => {
-    expect(createStatePreservedDescription(() => new Date(date))(0.6, ``)).toEqual(
-      `{
-  "updatedAt": "${date}",
-  "progress": 0.6
+ipsum`);
+  });
+  it(`\nGIVEN undelimited state \nWHEN create message \nTHEN preserve all state`, () => {
+    expect(create(progress, undelimitedState)).toBe(`{
+  "updatedAt": "2020-01-01T00:00:00.000Z",
+  "progress": 0.5
 }
 
-${delimiter}`,
-    );
+DO_NOT_DELETE_linear_productboard_integration_delimiter
+
+Lorem ipsum`);
   });
 });

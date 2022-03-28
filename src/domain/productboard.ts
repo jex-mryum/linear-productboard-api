@@ -1,7 +1,4 @@
-import * as z from 'zod';
-import { retrieveState, usePBUpdater } from '../http/productboard';
-import { isJSONString } from '../utils/json';
-import { logger } from '../utils/log';
+import { retrieveState, updatePBFeatureById } from '../http/productboard';
 
 export interface ProgressUpdate {
   featureId: string;
@@ -20,66 +17,25 @@ export const updateProductboard = async (update: ProgressUpdate): Promise<Update
   const { featureId, progress } = update;
   const raw = await retrieveState(featureId);
   const state = parseHTMLParatoString(raw);
-  const updatedAt = new Date().toISOString();
 
-  const updatePBFeatureById = usePBUpdater(featureId);
+  const createNewDescription = useStatePreservingDescription();
 
-  if (state.indexOf(delimiter) === -1) {
-    logger.info(`No delimiter was found in the current description`);
-    return (await updatePBFeatureById(
-      JSON.stringify({ updatedAt, progress }, null, 2).concat(`\n\n`, delimiter, `\n\n`, state),
-    ))
-      ? UpdateOutcome.Updated
-      : UpdateOutcome.Failed;
-  }
-
-  const current = extractProgress(state);
-  if (current && progress === current) {
-    logger.info(`Update progress matched the current progress value in the description`);
-    return UpdateOutcome.Unchanged;
-  }
-
-  if (!current && state.indexOf(delimiter) !== -1) {
-    logger.info(`No current progress was found above the delimiter in the description`);
-    return (await updatePBFeatureById(JSON.stringify({ updatedAt, progress }, null, 2).concat(`\n\n`, state)))
-      ? UpdateOutcome.Updated
-      : UpdateOutcome.Failed;
-  }
-
-  if (current && current !== progress) {
-    logger.info(`Updated progress is different to the current value in the description`);
-    return (await updatePBFeatureById(JSON.stringify({ updatedAt, progress }, null, 2).concat(`\n\n`, state)))
-      ? UpdateOutcome.Updated
-      : UpdateOutcome.Failed;
-  }
-  return UpdateOutcome.Failed;
+  return (await updatePBFeatureById(featureId, createNewDescription(progress, state)))
+    ? UpdateOutcome.Updated
+    : UpdateOutcome.Failed;
 };
 
-export const createStatePreservedDescription =
+export const useStatePreservingDescription =
   (now = () => new Date()) =>
-  (progress: number, state: string): string | undefined => {
+  (progress: number, state: string): string => {
     const updatedAt = now();
-    if (state.indexOf(delimiter) === -1) {
-      return JSON.stringify({ updatedAt, progress }, null, 2).concat(`\n\n`, delimiter, state);
-    }
-    const current = extractProgress(state);
-    if (current && current !== progress) {
-      return JSON.stringify({ updatedAt, progress }, null, 2).concat(`\n\n`, state);
-    }
-  };
+    const preserved =
+      state.indexOf(delimiter) !== -1
+        ? state.substring(state.indexOf(delimiter) + delimiter.length, state.length)
+        : state;
 
-export const extractProgress = (rawState: string): number | undefined => {
-  const state = parseHTMLParatoString(rawState);
-  const extracted = state.substring(0, state.indexOf(delimiter));
-  const obj = extracted.substring(extracted.indexOf('{'), extracted.indexOf('}') + 1);
-  const flat = obj.split(`\n`).join('');
-  if (!isJSONString(flat)) {
-    logger.info(`Extracted pre-deliminator body was not parsable into JSON: ${flat}`);
-    return undefined;
-  }
-  const parsed = z.object({ progress: z.number().transform(n => Number(n.toFixed(2))) }).safeParse(JSON.parse(flat));
-  return parsed.success ? parsed.data.progress : undefined;
-};
+    return JSON.stringify({ updatedAt, progress }, null, 2).concat(`\n\n`, delimiter, `\n\n`, preserved);
+  };
 
 export const parseHTMLParatoString = (rawHTML: string): string =>
   rawHTML
